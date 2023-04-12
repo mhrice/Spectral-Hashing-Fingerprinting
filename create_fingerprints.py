@@ -59,7 +59,7 @@ def fingerprintBuilder(database_path, fingerprints_path):
 
 
 def create_inverted_list(coords):
-    Ld = {}
+    Ld = {}  # Hash table of frequency_bin: list of timesteps
     for i in range(len(coords)):
         if coords[i][0] not in Ld:
             Ld[coords[i][0]] = []

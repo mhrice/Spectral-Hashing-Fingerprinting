@@ -30,9 +30,7 @@ def audioIdentification(query_dir, fingerprint_dir, output_file):
 
     # Get all the query files
     query_files = list(Path(query_dir).glob("**/*.wav"))
-    # For each query file
 
-    correct = 0
     for query_file in tqdm(query_files, total=len(query_files)):
         # Get the query fingerprints
         # Load audio file
@@ -60,6 +58,7 @@ def audioIdentification(query_dir, fingerprint_dir, output_file):
             feature, min_distance=min_distance, threshold_abs=threshold_abs
         )
 
+        # Calculate matching function for each fingerprint
         max_vals = {}
         for fingerprint, fd in zip(fingerprints, fingerprint_dicts):
             indicators = create_indicator_functions(local_max, fd)
@@ -68,9 +67,6 @@ def audioIdentification(query_dir, fingerprint_dir, output_file):
             max_vals[fingerprint.stem] = max_val
 
         max_vals = sorted(max_vals.items(), key=lambda x: x[1], reverse=True)
-
-        # print("Query file: ", query_file.stem.split("-")[0])
-        # print(max_vals[:k])
 
         # Save the top k results
         output += f"{query_file.stem}\t"
@@ -85,15 +81,11 @@ def audioIdentification(query_dir, fingerprint_dir, output_file):
 def create_indicator_functions(coords, Ld):
     indicator_functions = []
     for i in range(len(coords)):
-        # time zero is at -max_time
+        # set time zero is at -max_time
         indicator_function = np.zeros(max_time * 2 + 1)
         if coords[i][0] in Ld:
+            # Found match
             for ts in Ld[coords[i][0]]:
-                try:
-                    indicator_function[ts - coords[i][1] + max_time] = 1
-                except IndexError:
-                    import pdb
-
-                    pdb.set_trace()
+                indicator_function[ts - coords[i][1] + max_time] = 1
         indicator_functions.append(indicator_function)
     return np.array(indicator_functions)
